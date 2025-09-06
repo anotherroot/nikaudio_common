@@ -148,7 +148,11 @@ test_ssh_connection() {
 create_server_directories() {
     print_status "Creating directory structure on server..."
     
+    ssh "$SERVER_USER@$SERVER_HOST" "sudo rm -rf /var/www/nikaudio 2>/dev/null || true"
+
     ssh "$SERVER_USER@$SERVER_HOST" "
+        sudo mkdir -p /var/www/nikaudio
+        sudo chown -R tilen:users /var/www/nikaudio
         mkdir -p $SERVER_PATH
         mkdir -p $SERVER_PATH/frontend
         mkdir -p $SERVER_PATH/backend
@@ -169,17 +173,15 @@ deploy_go() {
     
     # Stop the service if it's running
     ssh "$SERVER_USER@$SERVER_HOST" "sudo systemctl stop $SYSTEMD_SERVICE_NAME 2>/dev/null || true"
+
+    ssh "$SERVER_USER@$SERVER_HOST" "rm -rf $SERVER_PATH/backend/$GO_BINARY_NAME 2>/dev/null || true"
     
     # Copy binary
     scp "$GO_PROJECT_PATH/$GO_BINARY_NAME" "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/backend/"
     
     # Copy audio files if they exist
-    if [ -f "$GO_PROJECT_PATH/audio1.mp3" ] && [ -f "$GO_PROJECT_PATH/audio2.mp3" ]; then
-        print_status "Copying audio files..."
-        scp "$GO_PROJECT_PATH/audio1.mp3" "$GO_PROJECT_PATH/audio2.mp3" "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/backend/"
-    else
-        print_warning "Audio files not found in Go project directory"
-    fi
+    print_status "Copying audio files..."
+    scp -r "$GO_PROJECT_PATH/audio" "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/backend/audio"
     
     # Make binary executable
     ssh "$SERVER_USER@$SERVER_HOST" "chmod +x $SERVER_PATH/backend/$GO_BINARY_NAME"
@@ -196,8 +198,10 @@ deploy_go() {
 deploy_angular() {
     print_status "Deploying Angular frontend..."
     
+
     # Copy built frontend
-    scp -r "$ANGULAR_PROJECT_PATH/dist/"* "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/frontend/"
+    scp -r "$ANGULAR_PROJECT_PATH/dist/"* "$SERVER_USER@$SERVER_HOST:/var/www/nikaudio"
+    ssh "$SERVER_USER@$SERVER_HOST" "sudo chown -R nginx:nginx /var/www/nikaudio"
     
     if [ $? -eq 0 ]; then
         print_success "Angular frontend deployed successfully"
@@ -210,22 +214,22 @@ deploy_angular() {
 # Start services
 start_services() {
     print_status "Starting services on server..."
-    
-    # Start systemd service if configured
-    ssh "$SERVER_USER@$SERVER_HOST" "
-        cd $SERVER_PATH/backend
-        
-        # Start the Go service (adjust this based on your setup)
-        if systemctl list-units --type=service | grep -q $SYSTEMD_SERVICE_NAME; then
-            sudo systemctl start $SYSTEMD_SERVICE_NAME
-            sudo systemctl enable $SYSTEMD_SERVICE_NAME
-            print_success 'Systemd service started'
-        else
-            # Start manually in background (you might want to use screen or tmux instead)
-            nohup ./$GO_BINARY_NAME > app.log 2>&1 &
-            echo 'Started Go backend manually'
-        fi
-    "
+    # 
+    # # Start systemd service if configured
+    # ssh "$SERVER_USER@$SERVER_HOST" "
+    #     cd $SERVER_PATH/backend
+    #     
+    #     # Start the Go service (adjust this based on your setup)
+    #     if systemctl list-units --type=service | grep -q $SYSTEMD_SERVICE_NAME; then
+    #         sudo systemctl start $SYSTEMD_SERVICE_NAME
+    #         sudo systemctl enable $SYSTEMD_SERVICE_NAME
+    #         print_success 'Systemd service started'
+    #     else
+    #         # Start manually in background (you might want to use screen or tmux instead)
+    #         nohup ./$GO_BINARY_NAME > app.log 2>&1 &
+    #         echo 'Started Go backend manually'
+    #     fi
+    # "
 }
 
 # Create systemd service file (optional)
