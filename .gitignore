@@ -1,3 +1,4 @@
 .direnv
 .gopath
 .punjado
+config/deploy/dev.env
