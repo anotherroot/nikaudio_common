@@ -256,6 +256,7 @@ After=network.target
 Type=simple
 User=$SERVER_USER
 WorkingDirectory=$SERVER_PATH/backend
+EnvironmentFile=$SERVER_PATH/backend/.env
 ExecStart=$SERVER_PATH/backend/$GO_BINARY_NAME
 Restart=always
 RestartSec=5
