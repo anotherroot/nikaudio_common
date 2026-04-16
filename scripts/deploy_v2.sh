@@ -2,6 +2,7 @@
 
 # Load configuration
 CONFIG_FILE="./config/deploy/dev.config"
+ENV_FILE_PATH="./config/deploy/dev.env"
 if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
     echo "Loaded configuration from $CONFIG_FILE"
@@ -180,8 +181,18 @@ deploy_go() {
     scp "$GO_PROJECT_PATH/$GO_BINARY_NAME" "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/backend/"
     
     # Copy audio files if they exist
-    print_status "Copying audio files..."
-    scp -r "$GO_PROJECT_PATH/audio" "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/backend/audio"
+    # print_status "Copying audio files..."
+    # scp -r "$GO_PROJECT_PATH/audio" "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/backend/audio"
+
+    if [ -f "$ENV_FILE_PATH" ]; then
+        print_status "Copying environment file..."
+        scp "$ENV_FILE_PATH" "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/backend/.env"
+        # Secure the file so only the owner can read it
+        ssh "$SERVER_USER@$SERVER_HOST" "chmod 600 $SERVER_PATH/backend/.env"
+    else
+        print_warning "No environment file found at $ENV_FILE_PATH. Skipping."
+    fi
+
     
     # Make binary executable
     ssh "$SERVER_USER@$SERVER_HOST" "chmod +x $SERVER_PATH/backend/$GO_BINARY_NAME"
