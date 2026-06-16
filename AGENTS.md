@@ -55,10 +55,12 @@ Typical flow:
 3. User queues a book version for audio generation.
 4. Backend snapshots block content for the request and creates a queue row.
 5. Worker polls the backend for the next job.
-6. Worker generates audio with Kokoro ONNX and submits an `.m4b` plus block
+6. Backend returns the immutable block snapshots for the claimed job, not live
+   editable book blocks.
+7. Worker generates audio with Kokoro ONNX and submits an `.m4b` plus block
    timing/phoneme metadata.
-7. Backend stores the audio file, audio block metadata, marks the request done,
-   and the frontend can play the result.
+8. Backend stores the audio file, links audio block metadata back to the source
+   block snapshots, marks the request done, and the frontend can play the result.
 
 The product model is block-centric. Preserve that mental model when adding
 features: books have versions, versions have ordered blocks, audio output should
@@ -83,8 +85,12 @@ Main entry point:
 
 Key folders:
 
+- `src/bookblocks`: block-order parsing, pagination, and ordered block fetch
+  helpers.
 - `src/models`: GORM models.
 - `src/handlers`: HTTP handlers grouped by domain.
+- `src/services`: backend business logic used by handlers. Keep transaction
+  logic and domain workflows here when possible.
 - `src/dto`: request/response contracts.
 - `src/middleware`: auth, CORS, logging helpers.
 - `src/db`: SQLite connection and local seed user.
@@ -93,7 +99,15 @@ Key folders:
 - `docs`: generated Swagger output.
 - `storage/audio`: local generated audio storage.
 - `dummy_worker`: simple worker client/testing code.
-- `tests`: current Go tests. Some are placeholders and may intentionally fail.
+
+Important service packages:
+
+- `src/services/audioqueue`: queues book audio requests atomically, creates
+  immutable `BlockSnapshot` rows, and creates the queue row.
+- `src/services/workerjobs`: claims worker jobs and builds worker payloads from
+  snapshots.
+- `src/services/audioresults`: persists worker audio uploads, creates linked
+  audio block metadata, and maps stored audio results for playback.
 
 Important models:
 
@@ -102,10 +116,14 @@ Important models:
   ordered block IDs.
 - `Block`: paragraph/chapter-title units used for editing and TTS.
 - `AudioRequest`: queued work request.
+- `BlockSnapshot`: immutable copy of queued block content, order, voice, and
+  language at request time. Workers should process snapshots, not live blocks.
 - `Queue`: queue status, type, worker ownership, and crash-recovery lock time.
 - `Worker`: registered worker token hash and type.
 - `AudioBook`: generated audio file plus length and ownership.
-- `AudioBlock`: timing and phoneme metadata for generated audio blocks.
+- `AudioBlock`: timing and phoneme metadata for generated audio blocks. New
+  rows should link to `BlockSnapshotID` so future patching can identify the
+  exact generated source text.
 
 Important handlers:
 
@@ -117,6 +135,16 @@ Important handlers:
 - `textAudio.go`: result and audio-serving endpoints.
 - `settings.go`: user settings.
 
+Handler/service boundary:
+
+- Handlers should bind/validate HTTP input, resolve auth/session context,
+  perform access checks, and map service results to DTOs.
+- Business workflows should live under `src/services`, especially anything that
+  opens transactions, mutates multiple tables, claims queue rows, or maps stored
+  audio metadata.
+- Reuse `src/bookblocks` for `BlockOrder` parsing, pagination, and ordered block
+  fetching. Do not reconstruct block order with ad hoc JSON parsing in handlers.
+
 Worker endpoints:
 
 - `POST /api/worker/register`: register worker with admin/service auth token.
@@ -126,13 +154,20 @@ Worker endpoints:
 
 Notes and cautions:
 
-- `RequestBlockAudio` and `GetWorkerFile` currently call `log.Fatal` and are not
-  production-ready.
+- `RequestBlockAudio` and `GetWorkerFile` currently return `501 Not
+  Implemented` and are not production-ready.
 - The backend currently uses SQLite and local disk audio storage.
 - Generated Swagger docs feed the Angular OpenAPI client. When backend DTOs or
   routes change, regenerate docs and then regenerate the frontend client.
 - Be careful with block ordering. `BlockOrder` is authoritative for playback and
-  processing order, not database row order.
+  processing order, not database row order. Once a job is queued,
+  `BlockSnapshot.OrderIndex` is the authoritative order for that audio request.
+- Worker payloads must be built from `BlockSnapshot` rows. Editing a book after
+  queueing must not alter the content a worker processes for the already-queued
+  request.
+- Audio result views should prefer `AudioBlock.BlockSnapshotID` and snapshot
+  content. Legacy fallback to live block order exists only for old rows without
+  snapshots.
 - Preserve access rules: owned books require owner auth; guest books use guest
   tokens; future public-domain books need explicit public/private semantics.
 
@@ -269,8 +304,9 @@ Worker runtime concepts:
   block, report progress via `POST /api/worker/status`, and upload final audio
   plus block metadata to `POST /api/worker/audio/:hash_id`.
 - Uploaded block metadata should include block IDs, end timestamps in
-  milliseconds, and phoneme/foname content so the backend can build `AudioBlock`
-  rows.
+  milliseconds, and phoneme/foname content. The backend validates these IDs
+  against the queued snapshots and stores `AudioBlock` rows linked to the
+  matching `BlockSnapshot`.
 
 Nix dev shells:
 
