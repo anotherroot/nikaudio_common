@@ -6,7 +6,7 @@ Nikaudio product:
 - `nikaudio-web`: Angular frontend.
 - `nikaudio-be`: Go API/backend.
 - `nikaudio-worker`: Python/Kokoro TTS worker experiments and worker runtime.
-- `nikaudio_common`: shared deployment/configuration scripts.
+- `nikaudio-common`: shared deployment/configuration scripts.
 
 The top-level directory is not itself a git repository. Check git status inside
 each subproject before editing, and do not assume changes in one folder are
@@ -73,15 +73,16 @@ Go backend using:
 
 - Go module `nikaudio`.
 - Gin for HTTP routing.
-- GORM with SQLite (`app.db`) for persistence.
-- Cookie sessions for normal users.
+- GORM with PostgreSQL for application persistence.
+- `golang-migrate` SQL migrations under `src/db/migrations/postgres`.
+- DB-backed opaque cookie sessions for normal users.
 - Bearer-style token auth for workers.
 - `swaggo`/Swagger annotations for API docs.
 - `godotenv` for local `.env` loading.
 
 Main entry point:
 
-- `main.go`
+- `cmd/api/main.go`
 
 Key folders:
 
@@ -93,9 +94,11 @@ Key folders:
   logic and domain workflows here when possible.
 - `src/dto`: request/response contracts.
 - `src/middleware`: auth, CORS, logging helpers.
-- `src/db`: SQLite connection and local seed user.
+- `src/db`: driver-aware DB connection, Postgres migrations, optional env-gated
+  admin seed.
 - `src/mail`: email delivery helpers.
-- `src/session`: in-memory/session utilities.
+- `src/session`: DB-backed session store plus in-memory test utility.
+- `src/platform/filestore`: narrow audio file storage abstraction.
 - `docs`: generated Swagger output.
 - `storage/audio`: local generated audio storage.
 - `dummy_worker`: simple worker client/testing code.
@@ -108,6 +111,13 @@ Important service packages:
   snapshots.
 - `src/services/audioresults`: persists worker audio uploads, creates linked
   audio block metadata, and maps stored audio results for playback.
+- `src/services/audiorequests`: authenticated audio request list/delete/source
+  workflows.
+- `src/services/audioqueries`: audio result/status/chunk metadata read models.
+- `src/services/workers`: worker registration, heartbeat/status, and audio
+  ingestion orchestration.
+- `src/services/books`: book creation, parsing, reads, and version update
+  workflows.
 
 Important models:
 
@@ -156,9 +166,19 @@ Notes and cautions:
 
 - `RequestBlockAudio` and `GetWorkerFile` currently return `501 Not
   Implemented` and are not production-ready.
-- The backend currently uses SQLite and local disk audio storage.
+- PostgreSQL is the runtime/default database. SQLite remains only for explicit
+  throwaway local/unit tests with GORM `AutoMigrate`; SQLite migrations are not
+  maintained.
+- Application startup runs committed Postgres migrations and does not run GORM
+  `AutoMigrate`.
+- Worker queue claiming uses PostgreSQL `FOR UPDATE SKIP LOCKED`; tests that
+  depend on Postgres behavior are gated by `TEST_DATABASE_DSN`.
+- Generated audio storage goes through `src/platform/filestore.FileStore`; local
+  disk storage under `storage/audio` is the only implementation for now.
 - Generated Swagger docs feed the Angular OpenAPI client. When backend DTOs or
   routes change, regenerate docs and then regenerate the frontend client.
+- Keep generated Swagger docs in sync with annotations. `make swagger-check`
+  verifies drift.
 - Be careful with block ordering. `BlockOrder` is authoritative for playback and
   processing order, not database row order. Once a job is queued,
   `BlockSnapshot.OrderIndex` is the authoritative order for that audio request.
@@ -176,9 +196,24 @@ Useful commands:
 ```sh
 cd nikaudio-be
 nix develop
-go run .
-go test ./...
+docker compose up -d postgres
+go run ./cmd/api
+make fmt-check
+make lint
+make test
+make swagger-check
 ```
+
+Local backend environment:
+
+- Use `DB_DRIVER=postgres` for normal local development.
+- The default local Postgres settings match `nikaudio-be/docker-compose.yml`:
+  `DB_HOST=localhost`, `DB_PORT=5432`, `DB_NAME=nikaudio`,
+  `DB_USER=nikaudio`, `DB_PASSWORD=nikaudio`, `DB_SSL_MODE=disable`.
+- Set `WORKER_AUTH_TOKEN` to a local secret used by `POST /api/worker/register`.
+- Set `TEST_DATABASE_DSN` only when intentionally running Postgres integration
+  tests; those tests create and drop isolated schemas in the configured
+  database.
 
 ## `nikaudio-web`
 
@@ -212,16 +247,51 @@ Current routes:
 
 Key frontend areas:
 
-- `create-book`: text/file book creation flow.
-- `book-editor`: block editing and book version update flow.
-- `books-list`: user book list.
-- `audio-requests`: queued/processed request list.
-- `audio-player`: result playback.
-- `audio-player/audio-playback.service.ts`: playback state/service logic.
-- `block-*` and `audioblock-*`: block display and virtual scrolling helpers.
-- `services/auth.service.ts`: frontend auth state.
-- `interceptors/error.interceptor.ts`: redirects on auth/server errors.
-- `core/api`: generated OpenAPI Angular client.
+- `src/app/books/create-book`: text/file book creation flow.
+- `src/app/books/books-list`: user book list.
+- `src/app/books/book-editor`: block editing and book version update flow.
+- `src/app/books/book-editor/book-editor-state.service.ts`: editor selection,
+  dirty tracking, block mutation, deleted-block tracking, and book-name state.
+- `src/app/books/book-editor/book-editor.service.ts`: book-editor API/workflow
+  state for loading, saving, and submitting a book version.
+- `src/app/books/block` and `src/app/books/block-virtual-scroll`: editable
+  block display and editor virtual scrolling helpers.
+- `src/app/audio/audio-requests`: queued/processed request list.
+- `src/app/audio/audio-player`: generated audio playback screen.
+- `src/app/audio/audio-player/audio-player.service.ts`: audio-result API
+  workflow state for audiobook metadata, paging, audio chunk loading, and toast
+  errors.
+- `src/app/audio/audio-player/audio-playback.service.ts`: local audio element
+  playback state and blob URL lifecycle.
+- `src/app/audio/audio-block` and `src/app/audio/audio-block-virtual-scroll`:
+  audio block display and virtual scrolling helpers.
+- `src/app/core/auth`: frontend auth/session state and guards.
+- `src/app/core/http`: API configuration and functional HTTP interceptor.
+- `src/app/core/api`: generated OpenAPI Angular client. Do not hand-edit.
+- `src/app/shared/layout`: layout shell components such as page layout and user
+  header.
+- `src/app/shared/ui`: reusable generic UI components such as dropdown input
+  and toast.
+
+Frontend refactor status:
+
+- The broad cleanup refactor is currently paused so feature work can continue.
+- Current structure is feature-area based under `books/`, `audio/`, `account/`,
+  with small `core/` and `shared/` layers.
+- The generated client is isolated under `src/app/core/api`.
+- Book editor state has been split into focused services:
+  `book-editor-state.service.ts` owns synchronous editor state and commands;
+  `book-editor.service.ts` owns API workflows and loading/saving/submitting
+  signals.
+- Audio player workflow loading has been split into `audio-player.service.ts`;
+  the component should stay focused on route, scroll, sidebar, and presentation
+  coordination.
+- Route parameter streams in book editor and audio player use `toSignal(...)`
+  with `effect(...)` for route-driven loading.
+- The project has ESLint/Prettier/build/test wired through `npm run check`.
+- Remaining cleanup items are intentionally deferred unless a feature touches
+  that area: richer inline form validation messages, toast/error consistency,
+  style cleanup, API generation documentation, and focused service tests.
 
 Generated client rule:
 
@@ -248,6 +318,7 @@ npm install
 npm start
 npm run build
 npm test
+npm run check
 ```
 
 Local environment:
@@ -265,6 +336,35 @@ Frontend standards:
 - Use the generated API services for backend calls when possible.
 - Preserve cookie credentials. The generated API `Configuration` is created with
   `withCredentials: true`.
+- Keep backend API calls out of presentation components when a workflow includes
+  mapping, paging, loading/error state, queue submission, or multiple related
+  requests. Put that workflow in a focused feature service next to the owning
+  feature.
+- Feature services with mutable signal state should keep writable signals
+  private and expose readonly signals with `asReadonly()`. Use explicit command
+  methods for mutations.
+- Use `computed(...)` for synchronous derivations from signals. Use
+  `effect(...)` sparingly, mainly for route-driven or integration side effects.
+- Prefer `toSignal(...)` for route/query params that are component state. Use
+  `takeUntilDestroyed(...)` for long-lived streams that remain subscriptions.
+- Keep one-shot user-action API subscriptions simple, but move them to a
+  feature service when the component starts owning workflow state.
+- Keep component-only UI state local to the component. Examples: sidebar open
+  flags, simple input focus state, and local presentation toggles.
+- Do not mutate readonly service signals from components. Add a service command
+  method instead.
+- Do not add a global state library during routine feature work.
+- For book editor changes, preserve `BlockId` support for both persisted numeric
+  IDs and local string IDs until new blocks are saved and reconciled.
+- For audio player changes, keep audio element/blob URL lifecycle in
+  `audio-playback.service.ts`, not in the component.
+- Prefer generated DTOs at API boundaries. Use local view-model wrappers only
+  when UI-only fields are needed.
+- When touching forms, prefer inline validation messages for field-level
+  validation and keep page-local recoverable errors local. Use the toast service
+  for cross-screen workflow results or unexpected global failures.
+- Run `npm run check` after frontend refactor-style changes. For small feature
+  edits, at minimum run the relevant formatter/lint/build command when feasible.
 
 ## `nikaudio-worker`
 
@@ -393,7 +493,7 @@ Backend plus frontend:
 
 ```sh
 cd nikaudio-be
-go run .
+air
 
 cd ../nikaudio-web
 npm start
