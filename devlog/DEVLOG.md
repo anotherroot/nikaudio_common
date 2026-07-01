@@ -17,6 +17,8 @@ _(none)_
 
 ## Done
 
+- [Header Avatar Icon](done/header-avatar-icon.md)
+  — replace the placeholder header user circle letter with an avatar icon.
 - [Book Editor Go-To-Start Command](done/book-editor-go-to-start-command.md)
   — remove sidebar start navigation and expose it as a command-palette action.
 - [Book Editor Export Commands](done/book-editor-export-commands.md)
