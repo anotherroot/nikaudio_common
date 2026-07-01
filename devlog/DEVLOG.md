@@ -17,6 +17,8 @@ _(none)_
 
 ## Done
 
+- [Book Editor Unsaved Navigation Guard](done/book-editor-unsaved-navigation-guard.md)
+  — warn before leaving dirty/saving editor state, with save status in the in-app dialog.
 - [Block Toolbar + Command Palette + Undo/Redo](done/block-toolbar-command-palette-undo.md)
   — bottom toolbar, searchable command palette, and FE-only undo/redo for the book editor.
 - [Book Editor Toolbar + Clipboard + Merge](done/book-editor-toolbar-clipboard-merge.md)
