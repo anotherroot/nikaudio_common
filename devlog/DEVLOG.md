@@ -17,6 +17,8 @@ _(none)_
 
 ## Done
 
+- [Book Editor Go-To-Start Command](done/book-editor-go-to-start-command.md)
+  — remove sidebar start navigation and expose it as a command-palette action.
 - [Book Editor Export Commands](done/book-editor-export-commands.md)
   — remove sidebar search/export buttons and expose book/selection Markdown export through commands.
 - [Book Editor Background Deselect](done/book-editor-background-deselect.md)
