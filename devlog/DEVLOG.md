@@ -17,6 +17,8 @@ _(none)_
 
 ## Done
 
+- [Sample Request Pipeline](done/sample-request-pipeline.md)
+  — generate an audio sample from one or many selected blocks, queued/played like a book and marked as a sample.
 - [Header Avatar Icon](done/header-avatar-icon.md)
   — replace the placeholder header user circle letter with an avatar icon.
 - [Book Editor Go-To-Start Command](done/book-editor-go-to-start-command.md)
