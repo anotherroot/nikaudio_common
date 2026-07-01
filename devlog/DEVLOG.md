@@ -17,6 +17,8 @@ _(none)_
 
 ## Done
 
+- [Book Editor Block-Index Autofetch](done/book-editor-block-index-autofetch.md)
+  — load the next block batch when scrolling reaches the last 50 loaded blocks.
 - [Book Editor Unsaved Navigation Guard](done/book-editor-unsaved-navigation-guard.md)
   — warn before leaving dirty/saving editor state, with save status in the in-app dialog.
 - [Block Toolbar + Command Palette + Undo/Redo](done/block-toolbar-command-palette-undo.md)
