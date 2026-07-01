@@ -457,6 +457,7 @@ Contents:
 - `config/deploy/prod.config`: production placeholder config.
 - `config/nginx.config.example`: example nginx config for Angular plus API proxy.
 - `flake.nix`: shell with Node, Go, and Air.
+- `devlog/`: cross-repo development log (see below).
 
 `deploy_v2.sh` behavior:
 
@@ -486,6 +487,31 @@ Deployment cautions:
   sibling repositories.
 - Production/test deploy scripts are planned; keep new script structure reusable
   instead of baking every environment into one branch of shell logic.
+
+## Dev Log
+
+`nikaudio-common/devlog/` records what we work on and the decisions we make, so future
+sessions (and future models) can pick up context that is not obvious from the code or git
+history alone.
+
+Structure:
+
+- `devlog/DEVLOG.md`: project-level index. One line per feature, linking its feature file,
+  grouped by status (`Doing` / `Waiting` / `Done`).
+- `devlog/doing/`, `devlog/waiting/`, `devlog/done/`: one Markdown file per feature. A
+  feature file has a short goal/decisions header plus a reverse-chronological, timestamped
+  entry log (`## YYYY-MM-DD — <what/why>`).
+
+How to maintain it:
+
+- When starting a feature, create `devlog/doing/<feature-slug>.md` (goal, decisions,
+  planned phases, empty log) and add a link under `Doing` in `DEVLOG.md`.
+- As you work, append a timestamped entry to the relevant feature file describing what
+  changed and why. Prefer recording decisions and rationale over restating the diff.
+- Move the feature file between `doing/`, `waiting/`, and `done/` as status changes, and
+  update its link/section in `DEVLOG.md` to match.
+- This log is intentionally cross-repo: features often span `nikaudio-web`, `nikaudio-be`,
+  and `nikaudio-worker`. Keep the log here even when the code lives elsewhere.
 
 ## Cross-Repo Development Workflow
 
@@ -533,6 +559,9 @@ When changing queue/worker behavior:
 - Use `rg` for repository searches.
 - Check status inside each repository you edit.
 - Do not revert unrelated local changes.
+- Keep the dev log current: append a timestamped entry to the relevant
+  `nikaudio-common/devlog/` feature file as you work, and move the file between
+  `doing/waiting/done/` (updating `DEVLOG.md`) as status changes. See the Dev Log section.
 
 ## Known Rough Edges
 

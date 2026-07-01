@@ -1,0 +1,21 @@
+# Nikaudio Dev Log
+
+This is the project-level index of the development log. Each feature has its own file
+under `doing/`, `waiting/`, or `done/`, holding a short goal/decisions header plus a
+reverse-chronological, timestamped entry log. Move a feature file between the folders as
+its status changes, and keep the link here in sync.
+
+See `nikaudio-common/AGENTS.md` (Dev Log section) for how to maintain these files.
+
+## Doing
+
+_(none)_
+
+## Waiting
+
+_(none)_
+
+## Done
+
+- [Block Toolbar + Command Palette + Undo/Redo](done/block-toolbar-command-palette-undo.md)
+  — bottom toolbar, searchable command palette, and FE-only undo/redo for the book editor.
