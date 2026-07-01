@@ -17,6 +17,8 @@ _(none)_
 
 ## Done
 
+- [Book Editor Background Deselect](done/book-editor-background-deselect.md)
+  — clear selection from the editor background and exit edit mode without changing selection.
 - [Book Editor Block-Index Autofetch](done/book-editor-block-index-autofetch.md)
   — load the next block batch when scrolling reaches the last 50 loaded blocks.
 - [Book Editor Unsaved Navigation Guard](done/book-editor-unsaved-navigation-guard.md)
