@@ -19,3 +19,5 @@ _(none)_
 
 - [Block Toolbar + Command Palette + Undo/Redo](done/block-toolbar-command-palette-undo.md)
   — bottom toolbar, searchable command palette, and FE-only undo/redo for the book editor.
+- [Book Editor Toolbar + Clipboard + Merge](done/book-editor-toolbar-clipboard-merge.md)
+  — mode-aware toolbar, disabled command reasons, system clipboard paste/copy/cut, and merge.
