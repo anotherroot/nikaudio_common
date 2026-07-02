@@ -17,6 +17,11 @@ _(none)_
 
 ## Done
 
+- [Audio Player view](done/audio-player-view.md)
+  — real listening UI: floating transport bar, click-seek, ±10s/±paragraph, current-block
+  highlight + progress fill, and auto-scroll following playback over the paginated chunks.
+- [Shared Scroll Engine](done/shared-scroll-engine.md)
+  — one generic virtual-scroll strategy shared by the book editor and audio player.
 - [Sample Request Pipeline](done/sample-request-pipeline.md)
   — generate an audio sample from one or many selected blocks, queued/played like a book and marked as a sample.
 - [Header Avatar Icon](done/header-avatar-icon.md)
