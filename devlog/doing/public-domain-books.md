@@ -26,6 +26,23 @@ Planned phases: B0 models/migrations · B1+F1 disable-blocks · B2+F6 admin inge
 F2 browse/suggest · B3+B5+F4 make-your-version/text-lock/make-private · B4+F3 versions+voting ·
 B6+F5 create-book-from-audiobook.
 
+## 2026-07-03 — Text-locked public editor + make-private (B5/F4)
+
+- **B5 (backend enforcement)**: `UpdateBookContext` takes `TextLocked` (derived from `Book.IsPublic()`
+  in the handler mapping) — it ignores content edits, drops reordering, and rejects add/delete with
+  `ErrTextLocked` (409). `BranchBookVersion` returns 409 for public books. New
+  `POST /book/:book_id/make-private` → `MakeBookPrivateContext` flips visibility to private (one-way;
+  audio drops from the catalog, text unlocks). `is_public` added to `BookVersionResponse`.
+- **F4 (editor public mode)**: editor state exposes `isPublicLocked` / `isTextLocked`; all
+  text/structure mutations (edit/split/merge/move/add/delete/paste/duplicate) now gate on `isTextLocked`
+  while heading/voice/lang/pronunciation/disable stay on `isReadonly`. Command availability + reasons
+  updated; the block textarea is read-only in public mode; the Versions panel is hidden; a "Public book"
+  info panel + "Make private" button with a consequences confirm dialog were added.
+
+Tests: text-lock update test (content ignored, heading/disable applied, add-block rejected) + contract
+key update. Full `go test`, FE build/lint, and 102 FE specs green. Remaining: B6/F5
+create-book-from-audiobook.
+
 ## 2026-07-03 — Catalog end-to-end (B2/F6/F2 + B3 + B4/F3)
 
 Built the public-domain catalog through to a working detail page:
