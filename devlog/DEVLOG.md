@@ -17,6 +17,8 @@ _(none)_
 
 ## Done
 
+- [Pronunciation Info Panel And Builder](done/pronunciation-info-panel-and-builder.md)
+  — larger Misaki English phoneme reference panel plus row-level pronunciation builder insertion UI.
 - [Audio Player view](done/audio-player-view.md)
   — real listening UI: floating transport bar, click-seek, ±10s/±paragraph, current-block
   highlight + progress fill, and auto-scroll following playback over the paginated chunks.
