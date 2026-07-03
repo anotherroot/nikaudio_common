@@ -9,6 +9,9 @@ See `nikaudio-common/AGENTS.md` (Dev Log section) for how to maintain these file
 
 ## Doing
 
+- [UI Revamp + Dark Mode](doing/ui-revamp.md)
+  — modern, coherent look for the whole frontend via semantic color tokens + class-based dark
+  mode; retire the gradient-era screens, keep the editor/player design language.
 - [Public Domain Books](doing/public-domain-books.md)
   — admin-curated public-domain catalog, user "public book" clones (text-locked), shared audio
   versions with like/dislike ranking, disable-block, and create-book-from-audiobook.
