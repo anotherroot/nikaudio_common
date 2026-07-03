@@ -26,6 +26,34 @@ Planned phases: B0 models/migrations · B1+F1 disable-blocks · B2+F6 admin inge
 F2 browse/suggest · B3+B5+F4 make-your-version/text-lock/make-private · B4+F3 versions+voting ·
 B6+F5 create-book-from-audiobook.
 
+## 2026-07-03 — Catalog end-to-end (B2/F6/F2 + B3 + B4/F3)
+
+Built the public-domain catalog through to a working detail page:
+
+- **B2 (backend ingest + reads)**: `publicbooks` service (create canonical system-owned book/version,
+  list with search + draft visibility, detail + first-chapter sample, publish/unpublish, metadata edit),
+  `RequireAdmin` middleware, filestore `CoverStore` (covers under `./storage/covers`), and the
+  `public_book.go` handler + routes (`/public-books`, `/public-books/:slug`, `/cover`, admin CRUD,
+  `/public-books/suggest`, `/admin/suggestions`). Auth check now returns `is_admin`.
+- **B3 (make-your-version)**: implemented the old 501 `CreateBookFromPublicBook` — clones the canonical
+  version into a user-owned Book (`Visibility=public`, `SourcePublicBookID`), reusing the branch clone
+  shape. Admins can clone drafts.
+- **B4 (versions + voting)**: `AudioRequest.PublicBookID` is set when queuing a public clone;
+  `ListAudioVersions` ranks processed audiobooks of still-public clones by net score;
+  `POST /public-books/audio/:id/vote` upserts/clears a vote and returns the new score.
+- **F6 admin UI**: `/admin/public-books` (role-guarded) — catalog list incl. drafts, create dialog
+  (title/author/origin/cover/text|file), publish toggles, suggestions list.
+- **F2 browse + suggest**: `/public-books` cover grid + debounced search + "Couldn't find your book?"
+  dialog (explains public domain + trusted sources) → suggestion submit. Nav entries added
+  (Public Books for all; Catalog for admins).
+- **F3 detail**: `/public-books/:slug` — cover, sample, origin link, "Make your version", and the ranked
+  audio-versions list with optimistic like/dislike.
+
+Client regenerated with `nix develop --command npm run generate-api` (works in the flake shell — updated
+the memory). Focused tests: publicbooks create/list/publish/sample/suggestion + clone + vote/list +
+made-private hiding. Full `go test ./...`, FE build/lint, and 102 FE specs green. Still to do: text-locked
+public-book editor mode (F4) + make-private (B5), and create-book-from-audiobook (B6/F5).
+
 ## 2026-07-03 — B0 models/migrations + B1/F1 disable-blocks
 
 Shipped the first slice on `feature/public-domain-books`:
