@@ -9,7 +9,9 @@ See `nikaudio-common/AGENTS.md` (Dev Log section) for how to maintain these file
 
 ## Doing
 
-_(none)_
+- [Public Domain Books](doing/public-domain-books.md)
+  — admin-curated public-domain catalog, user "public book" clones (text-locked), shared audio
+  versions with like/dislike ranking, disable-block, and create-book-from-audiobook.
 
 ## Waiting
 
