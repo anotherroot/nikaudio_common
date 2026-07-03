@@ -26,6 +26,21 @@ Planned phases: B0 models/migrations · B1+F1 disable-blocks · B2+F6 admin inge
 F2 browse/suggest · B3+B5+F4 make-your-version/text-lock/make-private · B4+F3 versions+voting ·
 B6+F5 create-book-from-audiobook.
 
+## 2026-07-03 — Create book from audiobook (B6/F5)
+
+- **B6 (backend)**: `POST /result/:hash_id/to-book` (RequireUser) builds a new book from the request's
+  ordered `BlockSnapshot`s via new `books.CreateBookFromBlocksContext` (content/type/disabled/
+  pronunciations/voice/lang). A public-domain audiobook (`AudioRequest.PublicBookID != nil`) yields a
+  text-locked public book with `SourcePublicBookID`; anything else yields a private editable book.
+  Access reuses `CanReadBook` (public → anyone, private → owner).
+- **F5 (frontend)**: `AudioPlayerService.createBookFromAudio()` + a "Create a book from this" button in
+  the audio player's Audio Actions sidebar (logged-in only), navigating to the new book's editor.
+
+Tests: public-vs-private book-from-blocks service test. Full `go test`, `make swagger-check` (in sync),
+FE build/lint, and 102 FE specs green. **All planned phases (B0–B6, F1–F6) are now implemented.**
+Remaining before moving to done: a manual end-to-end pass with the running stack (admin ingest → publish →
+browse → make-your-version → generate with a disabled block → vote → create-from-audiobook → make-private).
+
 ## 2026-07-03 — Text-locked public editor + make-private (B5/F4)
 
 - **B5 (backend enforcement)**: `UpdateBookContext` takes `TextLocked` (derived from `Book.IsPublic()`
