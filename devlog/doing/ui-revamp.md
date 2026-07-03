@@ -35,6 +35,29 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Full app migrated to tokens; gradient era retired
+
+- Every screen now uses the semantic tokens (parallel subagents restyled editor, player +
+  requests, home + books list, auth/settings/misc; shell + shared UI done in-session).
+  Grep-verified: zero `bg-gradient-to`/`hover:scale`/`active:scale` left in `app/`.
+- Full redesigns: home/create (calm accent-medallion cards, amber "login required" chips,
+  plain dialog), books list (accent-soft covers, "ID:" leak removed, header "New book"
+  button), audio requests (pt-24 shell, tokenized cards/status chips), auth screens
+  (single-border inputs, solid accent buttons), unreachable, settings (+ accent theme
+  picker).
+- Typography: Roboto → Inter 400–700 (fixes synthesized `font-bold`); removed dead
+  `.btn-primary`.
+- Audio requests DTO (`DtoTextRequestResponse`) exposes only id/hash/processed/type/created
+  — no book/version name, so cards still say "Request #id". **Backend follow-up:** add
+  version/book name (and failed state) to the list DTO.
+- Purple stays only for mass-edit semantics; green = generate/success; red destructive;
+  amber pending/draft. Editor keeps `transition-all` on blocks (animates edit-mode opacity
+  fade — colors-only would snap it).
+- Verified: lint, build, 102/102 tests, light+dark screenshots (home, login, player,
+  public books). Remaining for later passes: icon-font → inline SVG consolidation,
+  CDK Dialog migration for hand-rolled modals, editor sidebar UX rework, "Nikaudio" →
+  Librofono rename in user-facing strings.
+
 ## 2026-07-04 — Dark mode foundation shipped
 
 - Semantic tokens (`--color-surface/-raised`, `ink/-muted/-faint`, `line/-strong`,
