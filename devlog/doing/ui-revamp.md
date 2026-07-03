@@ -35,6 +35,26 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Dark mode foundation shipped
+
+- Semantic tokens (`--color-surface/-raised`, `ink/-muted/-faint`, `line/-strong`,
+  `accent/-strong/-soft/-ink`) in Tailwind 4 `@theme`; **accent = indigo**. New/revamped
+  templates should use `bg-surface`, `text-ink`, `border-line`, `bg-accent`, ....
+- **Transitional dark strategy:** besides the semantic tokens, `.dark` remaps the raw palette
+  variables (white, gray scale, hue -50/-100/-200 tints, -600/-700/-800 text shades) so every
+  legacy template goes dark immediately without edits. Tailwind 4 compiles utilities to
+  `var(--color-*)`, which makes this possible. The remap block in `styles.scss` shrinks as
+  screens migrate to semantic tokens, then gets deleted.
+- `ThemeService` (`core/theme/`): light/dark/system preference, localStorage key
+  `nikaudio-theme`, matchMedia tracking, toggles `.dark` on `<html>`. Pre-boot script in
+  `index.html` prevents the light flash (keep its key in sync). Sun/moon quick toggle in the
+  header (desktop nav + mobile menu); full Light/Dark/System picker in Settings → Appearance.
+- Fixed the duplicate Material Icons `<link src=...>` bug in index.html.
+- Verified: lint, build, 102/102 tests, dark screenshots of public books, login, audio
+  player (player looks great; gradient-era screens degrade acceptably until their redesign).
+- Screenshot harness: `shot.mjs` (session scratchpad) — headless chromium + CDP,
+  emulates `prefers-color-scheme` for dark shots.
+
 ## 2026-07-04 — Review + first public-books polish
 
 - Reviewed every screen with the user. Verdict: editor/player/public-books language is the
