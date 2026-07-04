@@ -35,6 +35,33 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Signature redesign pass (home + books list)
+
+- User disliked the flat token-only home ("miss the big colorful buttons"). New direction,
+  kept as the design system to extend across pages: **Fraunces** display serif for headlines
+  (`--font-display`, used with restraint via the `font-display` utility — see gotcha below),
+  Inter for body/UI, and **three colorful gradient hues** — terracotta `#e2492a` (paste),
+  teal `#0c8177` (upload), violet `#5a44d6` (catalog/accent) — as recurring accents with a
+  soft tinted `box-shadow` and hover-lift (`translateY`).
+- Home (`create-book`): colorful gradient action tiles (paste / upload / catalog) in the
+  user-pinned layout (paste top-left, upload top-right, public-domain full-width below,
+  browse link under). Upload + public-domain are **login-required** for guests: `.tile-locked`
+  quiet variant + amber "Login required" badge. Guest home fits without a scrollbar. (A
+  read-along karaoke strip was built as the signature but the user commented it out.)
+- Books list (`books-list`): extended the same language. Fraunces "Your *library.*" headline,
+  violet gradient "New book" pill (`.cta-accent`), and the page signature — each row is a
+  **book-spine chip** whose gradient cycles the three hues deterministically
+  (`book.id % 3` → `spine-paste/-upload/-catalog`) so the list reads like a shelf. Metadata
+  moved to material-icons; whole row is the edit link with hover-lift; "no version" rows stay
+  static. Skeleton + empty state restyled to match.
+- **Tailwind v4 gotcha (saved as memory `tailwind-v4-theme-var-pruning`):** a new `@theme`
+  var (e.g. `--font-display`) is pruned from `:root` unless a generated utility references it;
+  referencing it only via `var()` in component SCSS silently falls back (serif → sans). Fix:
+  put the `font-display` utility class on the element.
+- Verified: prettier + eslint clean, `ng build` clean, light+dark screenshots of `/books`
+  (authed via a session-cookie CDP shot — plain fe-shot hits the login redirect). Next pages
+  to extend the language onto: TBD with user (auth screens, requests, settings).
+
 ## 2026-07-04 — Full app migrated to tokens; gradient era retired
 
 - Every screen now uses the semantic tokens (parallel subagents restyled editor, player +
