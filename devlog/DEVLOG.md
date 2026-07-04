@@ -22,6 +22,9 @@ _(none)_
 
 ## Done
 
+- [Project Docs](done/project-docs.md)
+  — cross-repo `docs/` folder (`001-vision` … `006-roadmap` + index) in this repo, linked from
+  `CLAUDE.md`; repo list updated to five (added `nikaudio-landing`).
 - [Pronunciation Info Panel And Builder](done/pronunciation-info-panel-and-builder.md)
   — larger Misaki English phoneme reference panel plus row-level pronunciation builder insertion UI.
 - [Audio Player view](done/audio-player-view.md)

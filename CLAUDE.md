@@ -1,15 +1,22 @@
 # Nikaudio Agent Guide
 
 Nikaudio turns EPUB/text books into audiobooks with the open-source Kokoro TTS model.
-This workspace is **four separate git repositories** (the top-level dir is *not* a repo):
+This workspace is **five separate git repositories** (the top-level dir is *not* a repo):
 
 - `nikaudio-web` — Angular 20 frontend.
 - `nikaudio-be` — Go API/backend.
 - `nikaudio-worker` — Python/Kokoro TTS worker.
-- `nikaudio-common` — shared deploy/config scripts + the cross-repo dev log (this repo).
+- `nikaudio-landing` — static Librofono landing site.
+- `nikaudio-common` — shared deploy/config scripts, project docs, + the cross-repo dev log (this repo).
 
 Check `git status` inside each subproject before editing; changes in one folder are not
 tracked with another.
+
+**Project documentation** lives in `nikaudio-common/docs/` (start at `docs/README.md`):
+`001-vision` · `002-features` · `003-architecture` · `004-data-model` ·
+`005-development` · `006-roadmap`. This guide is the condensed version; the docs carry
+the full picture — consult them for anything this file only summarizes, and update the
+affected doc when features or architecture change.
 
 ## Product goal
 
