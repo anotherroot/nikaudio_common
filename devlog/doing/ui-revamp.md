@@ -35,6 +35,74 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Public catalog (list + detail) redesigned in the shelf language
+
+- Brought the two user-facing public-books screens into the language. They're a **catalog**
+  (browsing many books), so they use the full-scale shelf primitives (`.display-title`,
+  `.cta-accent`, `.shelf-row`/`.shelf-chip`, `.hue-*`) rather than the compact reader chrome —
+  the same split as home / My Books / My Audio.
+- **Per-book identity by slug.** `hueForSlug(slug)` (in `public-books.service.ts`, a char-sum
+  mod 3) picks a shelf hue deterministically, so a book keeps one colour from its cover in the
+  grid through to its detail page — the card/detail DTOs share only `slug`, so that's the key.
+- **List:** Fraunces "The public *library.*" headline; `Suggest a book` outline button;
+  loading skeletons; a friendlier empty state. The signature is the **cover grid** — a book
+  with no cover art becomes a coloured gradient spine (`.gradient-hue`) with a "Public domain"
+  eyebrow + Fraunces title, and every card lifts on hover in its own hue (`.book-cover`, new
+  in `styles.scss`). Real covers still render as images.
+- **Detail:** root carries the book hue; gradient spine fallback; Fraunces title; the primary
+  **Make your version** action reuses the book-hue `.ed-cta` (the one bold action, themed to
+  the book); Fraunces "Audio versions" with version rows as `.shelf-row`s (gradient play
+  `.shelf-chip` → player, owner + duration, the vote pill kept). Fixed a token bug: the vote
+  buttons' `hover:bg-gray-100` → `hover:bg-ink/5` (was invisible/ wrong in dark).
+- Copy: "Public-Domain Books" → "The public library"; "Couldn't find your book?" → "Suggest a
+  book"; "Back to catalog" → "Back to the library".
+- Verified: eslint + prettier + `ng build` clean; light+dark screenshots of both pages
+  (guest-viewable — Dracula, no cover, renders the teal gradient spine and carries that hue
+  into the detail page and its `.ed-cta`). No public-books unit tests exist to update; the
+  version-row styling reuses the already-proven My Audio `.shelf-*`.
+
+## 2026-07-04 — Audio player redesigned in the shelf language (+ primitives promoted to global)
+
+- Extended the same language into the **audio player**, mirroring the editor: floating
+  Fraunces title pill + gradient headphones chip, two hue-tinted card sidebars, calm reading
+  column left untouched, transport pinned bottom.
+- **Per-book identity, same key as the editor.** `bookHue()` is keyed by `book_id % 3` — the
+  result DTO already carries `book_id`, so a book keeps one colour across My Books → editor →
+  player. Added `bookId` + a `generatedLabel` (friendly `processed_at`) to
+  `audio-player.service.ts`; the hue class rides on `<page-layout [class]="bookHue()">` so the
+  cascade reaches the fixed transport too (custom-prop inheritance follows the DOM tree, not
+  layout).
+- **Signature = the transport.** The one thing a player has that the editor doesn't, so it
+  wears the book's hue most boldly: play button + progress fill are the book gradient
+  (`.transport-play/-fill/-thumb`) instead of flat indigo. Left panel: live `Now playing` +
+  `Progress` cards (the progress card's mini-bar reuses `.transport-fill`, tying it to the
+  transport). Right panel: a `Details` card (type / length / blocks / generated) in scroll,
+  with **Download audiobook** (bold book-hue `.ed-cta`) over **Create a book** (quiet
+  `.ed-cta-quiet`) pinned in a bordered footer — same footer pattern as the editor.
+- **Primitives promoted to global (one source of truth).** The `.ed-*` reader-chrome set was
+  trapped in the editor's *component-scoped* SCSS, so the player couldn't reuse it (view
+  encapsulation). Moved `.ed-card/-label/-chip/-title/-row/-cta/-cta-sample` + new
+  `.ed-cta-quiet` + `.transport-*` into `styles.scss` under "Reader chrome"; editor SCSS now
+  only holds `textarea { font-family: inherit }`. Corrects the earlier note below that placed
+  these in component SCSS. No editor regression: rule bodies are byte-identical and no `.ed-*`
+  element carries a conflicting Tailwind utility (audited — only `.ed-title` overlaps, with
+  `rounded/px/py`, which `.ed-title` never sets), so the specificity drop is inert.
+- Verified: build + eslint + prettier clean, 84/84 audio + editor tests pass (updated the
+  player spec's copy assertions: `Audiobook Info`/`Audio Actions` → `Now playing`/`Details`,
+  and the toggle titles → `Open/Hide panels`). Light+dark player screenshots via a **public**
+  guest-viewable audiobook (`/result` serves public-book audio without owner auth) — no DB
+  mutation or credential-guessing needed; the editor stays behind its auth guard so it was
+  verified by the audit above rather than a shot.
+
+## 2026-07-04 — Editor button refinements (user feedback)
+
+- Removed the right-panel titles (`Book/Block/Mass actions`). Pinned each primary generate
+  button into a bordered footer at the bottom of the right panel; **Generate sample** became a
+  green `.ed-cta-sample` twin of the book-hue **Generate audiobook** so a sample always reads
+  as distinct. Removed the redundant **Delete block** + **Deselect** buttons in block mode
+  (delete still lives on the bottom command toolbar; re-clicking deselects). Calmed the loud
+  accent-soft pill buttons (Create / Save / Apply) to neutral outline. Commit `73d374a`.
+
 ## 2026-07-04 — Book editor redesigned in the shelf language
 
 - Extended the My Books / My Audio language into the editor **chrome** while keeping the
