@@ -28,6 +28,10 @@ _(none)_
 - [Project Docs](done/project-docs.md)
   — cross-repo `docs/` folder (`001-vision` … `006-roadmap` + index) in this repo, linked from
   `CLAUDE.md`; repo list updated to five (added `nikaudio-landing`).
+- [Landing Page](done/landing-page.md)
+  — public Librofono landing site (static one-pager in new `nikaudio-landing` repo, SEO,
+  placeholder domain `librofono.example`) + `deploy_landing.sh` and nginx wiring; follow-ups:
+  register domain, first deploy.
 - [Pronunciation Info Panel And Builder](done/pronunciation-info-panel-and-builder.md)
   — larger Misaki English phoneme reference panel plus row-level pronunciation builder insertion UI.
 - [Audio Player view](done/audio-player-view.md)

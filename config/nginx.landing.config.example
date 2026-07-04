@@ -1,0 +1,148 @@
+# Nginx configuration for the Librofono landing site + app.
+#
+# PLACEHOLDER DOMAIN: the real domain is not bought yet, so `librofono.example`
+# is used everywhere (landing at the root domain, app at `app.librofono.example`).
+# The placeholder is used consistently and is greppable — once the real domain is
+# registered, swap it in one pass, e.g.:
+#   sed -i 's/librofono\.example/librofono.com/g' nginx.landing.config
+#
+# HTTPS: like nginx.config.example, this file is HTTP-only; SSL/certbot is expected
+# on the real server (uncomment and adjust the redirect + 443 blocks below).
+
+# Redirect www to the root domain
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.librofono.example;
+
+    return 301 $scheme://librofono.example$request_uri;
+}
+
+# Redirect HTTP to HTTPS (optional, uncomment if you have SSL)
+# server {
+#     listen 80;
+#     listen [::]:80;
+#     server_name librofono.example app.librofono.example;
+#
+#     return 301 https://$server_name$request_uri;
+# }
+
+# Uncomment and configure this block if you have SSL certificates
+# server {
+#     listen 443 ssl http2;
+#     listen [::]:443 ssl http2;
+#     server_name librofono.example;
+#
+#     ssl_certificate /path/to/your/certificate.crt;
+#     ssl_certificate_key /path/to/your/private.key;
+#
+#     # SSL configuration (add your SSL settings here)
+# }
+
+# Landing site — static one-pager at the root domain
+server {
+    listen 80;  # Change to 443 if using SSL
+    listen [::]:80;  # Change to 443 if using SSL
+    server_name librofono.example;
+
+    # Root directory for the static landing site (deployed by scripts/deploy_landing.sh)
+    root /var/www/nikaudio-landing;
+    index index.html;
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+
+    # Security headers
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options DENY;
+    add_header X-XSS-Protection "1; mode=block";
+
+    # Static site - no SPA fallback, unknown paths are 404
+    location / {
+        try_files $uri =404;
+    }
+
+    # Short cache for the HTML shell so content updates roll out quickly
+    location = /index.html {
+        add_header Cache-Control "public, max-age=300, must-revalidate";
+    }
+
+    # Cache static assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # robots.txt / sitemap.xml must stay fresh (they change on domain swap/content updates)
+    location ~* \.(xml|txt)$ {
+        expires 1h;
+        add_header Cache-Control "public, must-revalidate";
+    }
+
+    # Deny access to sensitive files
+    location ~ /\. {
+        deny all;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+
+# App — Angular frontend + Go API on the app subdomain
+server {
+    listen 80;  # Change to 443 if using SSL
+    listen [::]:80;  # Change to 443 if using SSL
+    server_name app.librofono.example;
+
+    # Root directory for Angular build (deployed by scripts/deploy_v2.sh)
+    root /var/www/nikaudio;
+    index index.html;
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    # Security headers
+    add_header X-Content-Type-Options nosniff;
+    add_header X-Frame-Options DENY;
+    add_header X-XSS-Protection "1; mode=block";
+
+    # Angular routing - serve index.html for all routes
+    location / {
+        try_files $uri $uri/ /index.html;
+        expires 1h;
+        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
+    }
+
+    # Cache static assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Proxy API requests to Go backend
+    # No CORS headers needed here: frontend and API are same-origin behind this
+    # server block. The CORS block in nginx.config.example was dev-only.
+    location /api/ {
+        proxy_pass http://localhost:3030/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Deny access to sensitive files
+    location ~ /\. {
+        deny all;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
