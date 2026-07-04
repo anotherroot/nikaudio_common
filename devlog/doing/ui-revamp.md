@@ -35,6 +35,23 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Settings redesigned; Subscription + Billing removed
+
+- **Removed the Subscription and Billing tabs** (user request) — both were "coming soon"
+  placeholders with no backing feature. Dropped the dead `activeTab !== 'personal' &&
+  !== 'appearance'` fallback too; `activeTab` is now typed `'personal' | 'appearance'`.
+- Redesigned in the shelf language: a page-level Fraunces "Settings" headline + subtitle
+  above the panel; the two tabs became `.ed-row`s (violet `.ed-row-active` when selected);
+  section headings are Fraunces `.ed-title`; the email field label is an `.ed-label` (violet
+  tick); Save is a book-hue `.ed-cta`. The page roots on `.hue-violet` (the brand accent,
+  since settings isn't tied to a book). Layout moved from a vertically-centred card to the
+  top-aligned `pt-24` shell the other pages use. Theme picker unchanged.
+- Copy: "Personal Data" → "Personal data", "Save Changes" → "Save changes".
+- Verified: eslint + prettier + build clean, settings unit test passes, authed light+dark
+  screenshots (Personal tab). Appearance tab not re-shot — the synthetic tab-click doesn't
+  register under zoneless CD — but it's the pre-existing theme picker with only
+  `.ed-title`/`.ed-label` swapped in, both proven on the Personal shot.
+
 ## 2026-07-04 — Public catalog (list + detail) redesigned in the shelf language
 
 - Brought the two user-facing public-books screens into the language. They're a **catalog**
