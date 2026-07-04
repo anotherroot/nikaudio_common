@@ -35,6 +35,35 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Book editor redesigned in the shelf language
+
+- Extended the My Books / My Audio language into the editor **chrome** while keeping the
+  block-editing column deliberately calm (a working surface shouldn't compete with its
+  chrome). User picked the "full panel restyle" scope over minimal/CTA-only.
+- **Per-book identity:** the editor root carries the book's own shelf hue (`bookHue()`,
+  keyed by `book_id % 3` — the same colour as its spine in My Books). Everything compact
+  reads `--grad-a/-b/--tint` from that one source, so a book is one consistent colour end to
+  end: title spine chip, section ticks, row hovers, and the primary CTA. Verified violet
+  (Two Cities) vs coral (Pride & Prejudice) render their own hue.
+- **Panels → cards.** Both sidebars, in every mode (book info/actions, block info/actions,
+  mass edit), became soft `.ed-card`s led by hue-ticked `.ed-label`s (tick via
+  `::before`, so labels are consistent and tick-free in markup). Overview gained a Fraunces
+  stat row (blocks/words/chars); versions, audiobooks and samples read as compact shelf rows
+  (`.ed-row`, active row hue-tinted). Book title is Fraunces (`.ed-title`) + gradient spine
+  chip in both the floating pill and the sidebar header.
+- **CTA:** "Submit Entire Book" → **"Generate audiobook"**, restyled to the book-hue gradient
+  (`.ed-cta`) with a graphic_eq icon — the one bold action. "Generate Sample" → "Generate
+  sample", keeps the green sample semantic. Modal headings picked up Fraunces.
+- Editor-scoped compact primitives (`.ed-card/-label/-chip/-title/-row/-cta`) live in the
+  component SCSS — a legitimately denser context than the full-width `.shelf-*`; colour still
+  comes from the shared `.hue-*` source, not redeclared. Functional colours left alone
+  (accent = selection ring, purple = mass edit, red = destructive).
+- Verified: 45/45 editor tests pass, lint + prettier + build clean, authed light/dark +
+  select-mode screenshots (via the cookie-injecting CDP harness; dev book 36 given a heading
+  + paragraphs so the surface is realistic). Note: the api `/book/version/:id` read route
+  populates its actor via `ResolveActor` (in-memory session store), so a session created in a
+  prior BE process 403s after an `air` restart — re-login for a fresh cookie.
+
 ## 2026-07-04 — Design-system primitives consolidated (one source of truth)
 
 - Resolved the duplication flagged below: the shelf visual language now lives once, as
