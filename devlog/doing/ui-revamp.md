@@ -35,6 +35,23 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Auth screens redesigned in the shelf language
+
+- Login, register, and reset-password (both request + set-new-password modes) brought into the
+  language. Each is a centred card rooted on `.hue-violet` (brand accent) with a shared front
+  door: a gradient headphones `.shelf-chip` medallion (the app's signature chip — book spines,
+  play buttons, now the brand mark), a Fraunces `.display-title` headline, and a violet
+  gradient `.cta-accent` primary button replacing the flat `bg-accent`. Inputs, error/success
+  blocks, password eye-toggle and spinners are unchanged.
+- Copy tuned to sentence case + dropped the dev name: "Welcome Back" → "Welcome back" /
+  "Sign in to pick up where you left off"; "Create Account" / "Join Nikaudio to get started" →
+  "Create your account" / "Turn your books into audiobooks"; reset headings → "Reset your
+  password" / "Set a new password"; buttons "Sign In/Create Account/Send Reset Link/Update
+  Password/Go to Login" → sentence case. (Left `confirm-email` alone — not in scope; the
+  Nikaudio→Librofono user-facing rename is still its own pending task.)
+- Verified: eslint + prettier + build clean, 3/3 auth specs pass, light+dark screenshots of
+  login + register + reset (all guest routes).
+
 ## 2026-07-04 — Settings redesigned; Subscription + Billing removed
 
 - **Removed the Subscription and Billing tabs** (user request) — both were "coming soon"
