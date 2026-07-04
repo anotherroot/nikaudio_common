@@ -35,6 +35,26 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — "Requests" → "My Audio", redesigned in the shelf language
+
+- Renamed the user-facing "Requests" nav item + page to **My Audio** (user's call; "Requests"
+  described it from the system's side). Route path kept as `/audio-requests` to avoid breaking
+  links; only labels + `title` changed.
+- Redesigned `audio-requests` in the same language as home / books list: Fraunces "Your
+  *audio.*" headline, rows with the shelf hue-cycling chip (`book.id % 3`). **Ready** items get
+  a colourful gradient play-chip and the whole row is an anchor to the player (hover-lift +
+  arrow); **Generating** items get a quiet muted chip + amber pill + spinner and aren't
+  clickable. Status copy Completed/Processing → **Ready/Generating**; each row now leads with
+  what it is ("Audiobook #id" / "Sample #id") since the DTO still has no book name.
+- Removed the dev-only `hash_id` mono display and the old inline SVGs (now material icons).
+  Dropped the now-unused `Router`/`onRequestClick`/`getStatusClass`/`getRequestTypeLabel`.
+- **Duplication watch:** the tile/chip/hue primitives now live in three component SCSS files
+  (create-book, books-list, audio-requests). Next design-system touch should promote the hue
+  set + card/chip to shared global classes (or `@theme` tokens) — one source of truth.
+- Verified: prettier + eslint clean, `ng build` clean, light+dark authed screenshots of
+  `/audio-requests` (ready book + ready sample + generating, via temporary DB rows since the
+  dev account had no audio; rows deleted after).
+
 ## 2026-07-04 — Signature redesign pass (home + books list)
 
 - User disliked the flat token-only home ("miss the big colorful buttons"). New direction,
