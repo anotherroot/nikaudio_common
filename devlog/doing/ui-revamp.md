@@ -35,6 +35,20 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Catalog admin restyled in the shelf language
+
+- Brought the admin catalog (`admin/public-books-admin`) into the language, reusing only
+  already-proven primitives so it reads as part of the same app: Fraunces "Catalog *admin.*"
+  headline; `.cta-accent` "Add book" + "Create draft"; catalog rows as `.shelf-row`s with a
+  per-book `hueForSlug` gradient cover (same spine colour a book gets in the public catalog);
+  Fraunces "Suggestions" heading with suggestion cards as `.ed-card`s; dashed empty states.
+  Publish/Unpublish keep their green/amber semantics (fixed a token nit: `hover:bg-green-50`/
+  `amber-50` → `hover:bg-green-500/10`/`amber-500/10` so they work in dark). Added a
+  `hueForSlug` delegate to the admin component.
+- Not screenshotted: the page is behind `isAdminGuard` and the dev account isn't an admin;
+  wouldn't guess admin creds or mutate role data. Everything here is primitives already
+  verified on the public catalog / auth / player, and the AOT build type-checks the template.
+
 ## 2026-07-04 — Auth screens redesigned in the shelf language
 
 - Login, register, and reset-password (both request + set-new-password modes) brought into the
