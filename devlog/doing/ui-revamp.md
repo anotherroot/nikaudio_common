@@ -35,6 +35,20 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Design-system primitives consolidated (one source of truth)
+
+- Resolved the duplication flagged below: the shelf visual language now lives once, as
+  global classes in `styles.scss` — `.hue-coral/-teal/-violet` (the three brand hues as
+  `--grad-a/-b/--tint`), `.display-title` (+`em`), `.cta-accent`, and
+  `.shelf-row`/`.shelf-chip`/`.shelf-chip-quiet`/`.shelf-arrow` (the list row pattern).
+- Home tiles, books list, and my-audio consume them. Components keep only genuinely local
+  styles: home's `.tile*` structure + read-along, the books-list skeleton shimmer, and
+  my-audio's `.status-*` pills + `.audio-spinner`. Home hero keeps its tighter leading via a
+  `leading-[1.03]` utility on the `.display-title` element.
+- New pages get the language for free: add `.shelf-row` + a `.hue-*` + `.shelf-chip`.
+- No visual change — verified home/books/my-audio render identically (light+dark), lint +
+  build clean.
+
 ## 2026-07-04 — "Requests" → "My Audio", redesigned in the shelf language
 
 - Renamed the user-facing "Requests" nav item + page to **My Audio** (user's call; "Requests"
