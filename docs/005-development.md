@@ -3,6 +3,31 @@
 How to run, test, and change the system. Each repo has a Nix flake — enter it with
 `nix develop` (node/go/python may not be on the bare PATH).
 
+## Live dev environment (usual state)
+
+The whole stack normally runs continuously in tmux; agents/tools should observe it rather
+than start second instances (the ports would clash):
+
+| What | Where | Notes |
+| --- | --- | --- |
+| Backend via `air` | tmux pane `Nikaudio BE:0.1` | Rebuilds on save; request logs live here; compile errors also in `nikaudio-be/tmp/build-errors.log` |
+| Frontend via `npm start` | tmux pane `Nikaudio FE - web:0.1` | Rebuilds on save; serves `http://localhost:3031` |
+| Postgres 16 | docker compose (`nikaudio-be/docker-compose.yml`) | `exec -T postgres psql -U nikaudio -d nikaudio` for direct SQL |
+
+Read a pane: `tmux capture-pane -p -t 'Nikaudio BE:0.1' -S -60`. Send input:
+`tmux send-keys -t 'Nikaudio BE:0.1' ...`. **After editing BE/FE code, check the relevant
+pane (or `build-errors.log`) to confirm the hot rebuild succeeded** — a broken build
+otherwise fails silently from the editor's perspective.
+
+Agent skills wrapping this environment live in `nikaudio-common/skills/` (symlinked into
+the workspace `.claude/skills/`):
+
+- **`be-api`** — curl recipes for the whole API: session/guest cookie jars, throwaway dev
+  accounts (confirm token via DB), queue/audio flows, worker-protocol simulation, psql
+  one-liners.
+- **`fe-shot`** — headless Chromium screenshots of the running FE (light + dark via a CDP
+  harness, `shot.mjs`), for visual verification of UI work.
+
 ## Backend (`nikaudio-be`)
 
 ```sh

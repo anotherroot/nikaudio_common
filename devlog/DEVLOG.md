@@ -22,6 +22,9 @@ _(none)_
 
 ## Done
 
+- [Agent Dev Tooling](done/agent-dev-tooling.md)
+  — `be-api` + `fe-shot` agent skills (canonical in `skills/`, symlinked to `.claude/skills/`)
+  and a live-env tmux runbook (air/npm panes, psql) in `CLAUDE.md` + `docs/005-development.md`.
 - [Project Docs](done/project-docs.md)
   — cross-repo `docs/` folder (`001-vision` … `006-roadmap` + index) in this repo, linked from
   `CLAUDE.md`; repo list updated to five (added `nikaudio-landing`).

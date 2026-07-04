@@ -64,6 +64,22 @@ Key invariants (do not break):
 - Frontend `http://localhost:3031` (dev server host `127.0.0.1:3031`)
 - Prod API: `https://nikaudio.anotherroot.eu/api`
 
+## Live dev environment
+
+The stack usually already runs in tmux — don't start second instances (ports clash):
+
+- **Backend** (air, rebuilds on save): pane `Nikaudio BE:0.1`. **After BE edits**, confirm the
+  rebuild: `tmux capture-pane -p -t 'Nikaudio BE:0.1' -S -60` (compile errors also land in
+  `nikaudio-be/tmp/build-errors.log`).
+- **Frontend** (`npm start`, rebuilds on save): pane `Nikaudio FE - web:0.1`, serves
+  `http://localhost:3031`. After FE edits, check the pane for "Application bundle generation
+  complete" vs compile errors.
+- **Postgres** (docker): `docker compose -f nikaudio-be/docker-compose.yml exec -T postgres
+  psql -U nikaudio -d nikaudio -c "SQL"` — prefer SELECTs; announce mutations first.
+- **Skills**: `be-api` (curl the API — auth jars, guest/worker flows, queue recipes) and
+  `fe-shot` (headless light/dark FE screenshots). Canonical in `nikaudio-common/skills/`,
+  symlinked into `.claude/skills/`.
+
 ---
 
 ## `nikaudio-be` (Go backend)
