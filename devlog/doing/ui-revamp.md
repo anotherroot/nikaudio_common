@@ -35,6 +35,25 @@ app and retire the older gradient-heavy style (home/create, books list, auth scr
 
 ## Log
 
+## 2026-07-04 — Landing site (`nikaudio-landing`) restyled to match the app
+
+- The static marketing site still wore the pre-redesign look (Roboto, a blue→purple
+  `#2563eb`→`#9333ea` gradient wash) and no longer matched the app. Rebuilt its CSS in the
+  same language: **Fraunces + Inter** (Google Fonts, same query as the app), the three brand
+  hues as recurring accents, light surfaces, and a violet gradient for the one primary action.
+- Hero went **light** (soft coral/teal/violet radial glows instead of a full gradient hero)
+  with a Fraunces headline + violet `em` accent; step number medallions and the six feature
+  icon tiles **cycle the three hues** via `nth-child`; the library section's three shelf cards
+  became **colourful book-spine gradients** — the signature that ties back to the app's book
+  spines. FAQ/footer picked up violet accents; footer keeps the "A gramophone for your books."
+  tagline in italic.
+- Retinted `assets/logo.svg` + `assets/hero-illustration.svg` gradients from blue/purple to
+  the app's violet (`#7d6bf0`→`#5a44d6`); the illustration's indigo waveform/highlight accents
+  already matched the app's accent, so they were left.
+- No build step (hand-written HTML/CSS/JS). Verified by serving `scripts/serve.mjs` and
+  screenshotting desktop (hero + full page) and mobile — all render Fraunces + the hue accents
+  and read as the same product. Committed in `nikaudio-landing` (`23a2f24`, branch `main`).
+
 ## 2026-07-04 — Catalog admin restyled in the shelf language
 
 - Brought the admin catalog (`admin/public-books-admin`) into the language, reusing only
